@@ -1,0 +1,70 @@
+f"""You are a web scraping expert analyzing {platform_name}.
+
+Please visit this URL: {url}
+
+Your task: Find CSS selectors for extracting search results.
+
+EFFICIENT STRATEGY (work in max 5 steps):
+
+Step 1: Navigate to the page and wait for it to load
+
+Step 2: Use evaluate() ONCE to find the container class:
+```javascript
+document.querySelector('[data-testid="results-list"]')?.children[0]?.className ||
+document.querySelectorAll('div[class*="row"], div[class*="item"], div[class*="result"]')[0]?.className
+```
+
+Step 3: Based on the container class found, quickly identify:
+- Title link: Look for <a> tags with href inside container (use evaluate if needed)
+- Content: Look for <p> or <span> with text
+- Date: Search deeply for date-related elements using this strategy:
+  1. First try: <time>, <relative-time>, elements with class containing 'date', 'time', 'timestamp'
+  2. If not found: Use container.textContent to find text patterns like:
+     - "Opened X ago", "Created X ago", "Posted X ago", "Published X ago"
+     - "X hours ago", "X days ago", "Yesterday", "Jan 1, 2025"
+  3. Find the element containing that text pattern (even if deeply nested)
+  4. Return a selector that can reliably find that element (use structural selectors if needed)
+
+Step 4: Build the selectors using the ACTUAL classes you found (even if they look dynamic)
+
+Step 5: Return the JSON immediately
+
+IMPORTANT:
+- Use evaluate() to GET the actual class names - don't guess
+- Even if classes look dynamic (Box-sc-62in7e-0), USE THEM - they work
+- The container selector MUST match MULTIPLE elements (verify with querySelectorAll)
+- Work fast - no overthinking, no long reasoning
+
+Example evaluate() for finding date element:
+```javascript
+(function() {{
+  const container = document.querySelector('YOUR_CONTAINER_SELECTOR');
+  const text = container.textContent;
+
+  // Find date patterns
+  const datePatterns = ['ago', 'hours', 'days', 'Posted', 'Created', 'Opened', 'Published'];
+
+  // Find all elements containing date-related text
+  const allElements = container.querySelectorAll('*');
+  for (let el of allElements) {{
+    const elText = el.textContent.trim();
+    if (datePatterns.some(p => elText.includes(p)) && elText.length < 100) {{
+      return el.className + ' | ' + el.tagName + ' | ' + elText.substring(0, 50);
+    }}
+  }}
+  return 'not found';
+}})()
+```
+
+Respond in this EXACT format (JSON):
+{{
+  "container_selector": "CSS selector for result container",
+  "title_selector": "CSS selector for title within container",
+  "link_selector": "CSS selector for link within container",
+  "content_selector": "CSS selector for content/excerpt within container",
+  "date_selector": "CSS selector for date within container OR 'not available'",
+  "confidence": "high/medium/low",
+  "notes": "Any important observations"
+}}
+
+Only return valid JSON, nothing else."""

@@ -1,0 +1,21 @@
+# Supported domains for crawling agents
+# Format: one domain URL per line
+# Lines starting with # are comments
+
+# Reddit
+https://www.reddit.com
+https://reddit.com
+https://stackoverflow.com/search
+https://stackoverflow.com
+
+https://news.ycombinator.com
+https://hn.algolia.com
+
+https://github.com/search
+https://github.com
+
+
+https://asec.ahnlab.com
+
+https://apple.com
+https://www.apple.com

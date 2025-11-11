@@ -1,0 +1,26 @@
+# Issue Agent Dependencies
+# Python 3.8+
+
+# Core dependencies for web crawling
+requests>=2.31.0
+beautifulsoup4>=4.12.0
+lxml>=4.9.0
+
+# Reddit API
+praw>=7.7.0
+
+# Browser automation for bypassing bot detection
+browser-use>=0.1.0  # Cloud browser with stealth mode
+undetected-chromedriver>=3.5.0
+selenium>=4.15.0
+
+# Optional: For dynamic content (if needed)
+playwright>=1.40.0
+
+# Utilities
+python-dateutil>=2.8.2
+urllib3>=2.0.0
+python-dotenv>=1.0.0
+
+# Rate limiting
+ratelimit>=2.2.1
