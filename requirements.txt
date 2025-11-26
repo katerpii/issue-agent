@@ -30,3 +30,7 @@ fastapi
 uvicorn
 python-multipart
 redis
+
+# LLM for result processing
+langchain-google-genai>=2.0.0  # Gemini (FREE!)
+langchain-anthropic>=0.1.0     # Claude (paid, optional)

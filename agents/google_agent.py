@@ -43,8 +43,6 @@ class GoogleAgent(BaseAgent):
     def crawl(
         self,
         keywords: List[str],
-        start_date: datetime,
-        end_date: datetime,
         detail: str = "",
         max_pages: int = 3
     ) -> List[Dict[str, Any]]:
@@ -53,8 +51,6 @@ class GoogleAgent(BaseAgent):
 
         Args:
             keywords: List of keywords to search for
-            start_date: Start date for search period
-            end_date: End date for search period
             detail: Additional detail for filtering
             max_pages: Maximum number of pages to crawl (default: 3)
 
@@ -63,7 +59,6 @@ class GoogleAgent(BaseAgent):
         """
         print(f"\n[{self.platform_name.upper()}] Starting crawl...")
         print(f"  Keywords: {', '.join(keywords)}")
-        print(f"  Period: {start_date.date()} ~ {end_date.date()}")
         print(f"  Max pages: {max_pages}")
 
         if not self.browser_use_available:
@@ -82,11 +77,11 @@ class GoogleAgent(BaseAgent):
                 import concurrent.futures
                 with concurrent.futures.ThreadPoolExecutor() as pool:
                     results = pool.submit(
-                        lambda: asyncio.run(self._crawl_async(query, start_date, end_date, max_pages))
+                        lambda: asyncio.run(self._crawl_async(query, max_pages))
                     ).result()
             except RuntimeError:
                 # No event loop - CLI mode (uv run main.py)
-                results = asyncio.run(self._crawl_async(query, start_date, end_date, max_pages))
+                results = asyncio.run(self._crawl_async(query, max_pages))
 
             print(f"  Found {len(results)} results")
 
@@ -100,8 +95,6 @@ class GoogleAgent(BaseAgent):
     async def _crawl_async(
         self,
         query: str,
-        start_date: datetime,
-        end_date: datetime,
         max_pages: int = 3
     ) -> List[Dict[str, Any]]:
         """
@@ -109,8 +102,6 @@ class GoogleAgent(BaseAgent):
 
         Args:
             query: Search query
-            start_date: Start date
-            end_date: End date
             max_pages: Maximum number of pages to crawl (default: 3)
 
         Returns:
@@ -131,13 +122,9 @@ class GoogleAgent(BaseAgent):
             # Get current page
             page = await session.get_current_page()
 
-            # Format dates for Google (mm/dd/yyyy)
-            start_str = start_date.strftime("%m/%d/%Y")
-            end_str = end_date.strftime("%m/%d/%Y")
-
-            # Build URL with custom date range
+            # Build URL without date filtering
             encoded_query = quote_plus(query)
-            url = f"https://www.google.com/search?q={encoded_query}&tbs=cdr:1,cd_min:{start_str},cd_max:{end_str}&num=20"
+            url = f"https://www.google.com/search?q={encoded_query}&num=20"
 
             print(f"  Navigating to Google...")
             await page.goto(url)

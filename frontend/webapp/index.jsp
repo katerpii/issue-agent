@@ -34,16 +34,8 @@
                 <input type="text" id="platforms" name="platforms" required value="google">
             </div>
             <div>
-                <label for="start_date">Start Date:</label>
-                <input type="date" id="start_date" name="start_date" required>
-            </div>
-            <div>
-                <label for="end_date">End Date:</label>
-                <input type="date" id="end_date" name="end_date" required>
-            </div>
-            <div>
-                <label for="detail">Detail (optional):</label>
-                <textarea id="detail" name="detail" rows="3"></textarea>
+                <label for="detail">Detail (optional preferences for filtering):</label>
+                <textarea id="detail" name="detail" rows="3" placeholder="e.g., 랜섬웨어, security issues, API documentation"></textarea>
             </div>
             <button type="submit">Run Agent</button>
         </form>
@@ -55,15 +47,8 @@
         </div>
     </div>
 
-    <script>
-        // Set default dates to today and a week ago
-        document.addEventListener('DOMContentLoaded', function() {
-            const today = new Date();
-            const aWeekAgo = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7);
-            document.getElementById('end_date').valueAsDate = today;
-            document.getElementById('start_date').valueAsDate = aWeekAgo;
-        });
-
+    <script type="text/javascript">
+    //<![CDATA[
         const form = document.getElementById('issue-form');
         const resultsEl = document.getElementById('results');
         const spinner = document.getElementById('loading-spinner');
@@ -74,7 +59,7 @@
 
         form.addEventListener('submit', async function(event) {
             event.preventDefault();
-            
+
             spinner.style.display = 'block';
             resultsEl.textContent = 'Running agent...';
             runAgentButton.disabled = true;
@@ -84,40 +69,89 @@
             const data = {
                 keywords: formData.get('keywords').split(',').map(k => k.trim()).filter(k => k),
                 platforms: formData.get('platforms').split(',').map(p => p.trim()).filter(p => p),
-                start_date: formData.get('start_date'),
-                end_date: formData.get('end_date'),
-                detail: formData.get('detail')
+                detail: formData.get('detail') || ''
             };
 
             try {
+                console.log('Sending request to:', runApiUrl);
+                console.log('Request data:', JSON.stringify(data, null, 2));
+
+                const controller = new AbortController();
+                const timeoutId = setTimeout(function() { controller.abort(); }, 60000);
+
                 const response = await fetch(runApiUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
+                    body: JSON.stringify(data),
+                    signal: controller.signal
                 });
+
+                clearTimeout(timeoutId);
+                console.log('Response status:', response.status);
 
                 if (!response.ok) {
                     const errorData = await response.json();
-                    throw new Error(`HTTP error! status: ${response.status} - ${errorData.detail || 'Unknown error'}`);
+                    throw new Error('HTTP error! status: ' + response.status + ' - ' + (errorData.detail || 'Unknown error'));
                 }
 
                 const responseData = await response.json();
-                
-                if (responseData.results && responseData.results.length > 0) {
-                    resultsEl.textContent = JSON.stringify(responseData.results, null, 2);
+                console.log('Response data:', responseData);
+
+                // results is now a dict with summary, total_results, and results_by_platform
+                if (responseData.results) {
+                    const results = responseData.results;
+
+                    // Format output nicely
+                    let output = '';
+
+                    // Show summary
+                    if (results.summary) {
+                        output += '=== SUMMARY ===\n';
+                        output += results.summary + '\n\n';
+                    }
+
+                    // Show total
+                    const totalResults = results.total_results || 0;
+                    output += 'Total filtered results: ' + totalResults + '\n\n';
+
+                    // Show results by platform
+                    if (results.results_by_platform) {
+                        output += '=== RESULTS BY PLATFORM ===\n\n';
+                        for (const [platform, items] of Object.entries(results.results_by_platform)) {
+                            output += '--- ' + platform.toUpperCase() + ' (' + items.length + ' results) ---\n';
+                            items.forEach(function(item, idx) {
+                                output += '\n[' + (idx + 1) + '] ' + item.title + '\n';
+                                output += '    URL: ' + item.url + '\n';
+                                if (item.relevance_score !== undefined) {
+                                    output += '    Relevance Score: ' + item.relevance_score + '/10\n';
+                                }
+                                if (item.relevance_reason) {
+                                    output += '    Reason: ' + item.relevance_reason + '\n';
+                                }
+                                if (item.content && item.content.length > 0) {
+                                    output += '    Preview: ' + item.content.substring(0, 150) + '...\n';
+                                }
+                            });
+                            output += '\n';
+                        }
+                    }
+
+                    resultsEl.textContent = output || 'No results found.';
                 } else {
                     resultsEl.textContent = 'No results found.';
                 }
 
             } catch (error) {
                 console.error('Error running agent:', error);
-                resultsEl.textContent = `Error: ${error.message}`;
+                console.error('Error details:', error);
+                resultsEl.textContent = 'Error: ' + error.message + '\n\nCheck browser console for more details.';
             } finally {
                 spinner.style.display = 'none';
                 runAgentButton.disabled = false;
                 runAgentButton.style.backgroundColor = '#007BFF';
             }
         });
+    //]]>
     </script>
 
 </body>

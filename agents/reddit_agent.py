@@ -45,8 +45,6 @@ class RedditAgent(BaseAgent):
     def crawl(
         self,
         keywords: List[str],
-        start_date: datetime,
-        end_date: datetime,
         detail: str = ""
     ) -> List[Dict[str, Any]]:
         """
@@ -54,8 +52,6 @@ class RedditAgent(BaseAgent):
 
         Args:
             keywords: List of keywords to search for
-            start_date: Start date for search period
-            end_date: End date for search period
             detail: Additional detail for filtering
 
         Returns:
@@ -63,7 +59,6 @@ class RedditAgent(BaseAgent):
         """
         print(f"\n[{self.platform_name.upper()}] Starting crawl...")
         print(f"  Keywords: {', '.join(keywords)}")
-        print(f"  Period: {start_date.date()} ~ {end_date.date()}")
 
         if not self.browser_use_available:
             print(f"  [ERROR] browser-use is not available.")
@@ -81,11 +76,11 @@ class RedditAgent(BaseAgent):
                 import concurrent.futures
                 with concurrent.futures.ThreadPoolExecutor() as pool:
                     results = pool.submit(
-                        lambda: asyncio.run(self._crawl_async(query, start_date, end_date))
+                        lambda: asyncio.run(self._crawl_async(query))
                     ).result()
             except RuntimeError:
                 # No event loop - CLI mode (uv run main.py)
-                results = asyncio.run(self._crawl_async(query, start_date, end_date))
+                results = asyncio.run(self._crawl_async(query))
 
             print(f"  Found {len(results)} results")
 
@@ -98,17 +93,13 @@ class RedditAgent(BaseAgent):
 
     async def _crawl_async(
         self,
-        query: str,
-        start_date: datetime,
-        end_date: datetime
+        query: str
     ) -> List[Dict[str, Any]]:
         """
         Async crawl using browser-use
 
         Args:
             query: Search query
-            start_date: Start date
-            end_date: End date
 
         Returns:
             List of Reddit posts

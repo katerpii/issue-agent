@@ -42,8 +42,6 @@ class AsecAgent(BaseAgent):
     def crawl(
         self,
         keywords: List[str],
-        start_date: datetime,
-        end_date: datetime,
         detail: str = "",
         max_pages: int = 3
     ) -> List[Dict[str, Any]]:
@@ -52,7 +50,6 @@ class AsecAgent(BaseAgent):
         """
         print(f"\n[{self.platform_name.upper()}] Starting crawl...")
         print(f"  Keywords: {', '.join(keywords)}")
-        print(f"  Period: {start_date.date()} ~ {end_date.date()}")
         print(f"  Max pages: {max_pages}")
 
         if not self.browser_use_available:
@@ -64,7 +61,19 @@ class AsecAgent(BaseAgent):
         query = " ".join(keywords)
 
         try:
-            results = asyncio.run(self._crawl_async(query, start_date, end_date, max_pages))
+            # Check if we're already in an async context (e.g., FastAPI)
+            try:
+                loop = asyncio.get_running_loop()
+                # Already in event loop - create task in thread pool
+                import concurrent.futures
+                with concurrent.futures.ThreadPoolExecutor() as pool:
+                    results = pool.submit(
+                        lambda: asyncio.run(self._crawl_async(query, max_pages))
+                    ).result()
+            except RuntimeError:
+                # No event loop - CLI mode (uv run main.py)
+                results = asyncio.run(self._crawl_async(query, max_pages))
+
             print(f"  Found {len(results)} results")
 
         except Exception as e:
@@ -77,8 +86,6 @@ class AsecAgent(BaseAgent):
     async def _crawl_async(
         self,
         query: str,
-        start_date: datetime,
-        end_date: datetime,
         max_pages: int = 3
     ) -> List[Dict[str, Any]]:
         """
@@ -92,7 +99,7 @@ class AsecAgent(BaseAgent):
             await session.start()
             page = await session.get_current_page()
 
-            search_url = self._build_search_url(query, start_date, end_date)
+            search_url = self._build_search_url(query)
             print(f"  Navigating to {search_url[:80]}...")
 
             await page.goto(search_url)
@@ -122,12 +129,10 @@ class AsecAgent(BaseAgent):
 
     def _build_search_url(
         self,
-        query: str,
-        start_date: datetime,
-        end_date: datetime
+        query: str
     ) -> str:
         encoded_query = quote_plus(query)
-        search_url = "https://asec.ahnlab.com/en/?s={query}"
+        search_url = "https://asec.ahnlab.com/ko/?s={query}"
         if '{query}' in search_url:
             search_url = search_url.replace('{query}', encoded_query)
         return search_url
@@ -148,7 +153,7 @@ class AsecAgent(BaseAgent):
 
 
             soup = BeautifulSoup(html, 'lxml')
-            containers = soup.select("div.post-block-wrapper-latest.post-block-style-latest")
+            containers = soup.select("div.latest-post-block-content")
             print(f"  Found {len(containers)} result containers")
 
             for container in containers[:50]:
@@ -173,7 +178,7 @@ class AsecAgent(BaseAgent):
                         content = content_elem.get_text(strip=True)
 
                     date = datetime.now()
-                    date_elem = container.select_one("li.slider-meta-date")
+                    date_elem = container.select_one("div.slider-post-meta-items.tab-small-col-meta")
                     if date_elem:
                         date_str = date_elem.get_text(strip=True)
 

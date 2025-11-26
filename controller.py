@@ -7,6 +7,7 @@ to collect relevant issues from various platforms.
 from typing import List, Dict, Any
 from models.user_form import UserForm
 from agents import RedditAgent, BaseAgent, GoogleAgent
+from result_processor import ResultProcessor
 
 
 class ControllerAgent:
@@ -26,7 +27,21 @@ class ControllerAgent:
             'reddit': RedditAgent()
         }
 
-    def run(self, user_form: UserForm) -> List[Dict[str, Any]]:
+        # Initialize result processor for filtering and summarization
+        try:
+            print("[CONTROLLER] Initializing ResultProcessor...")
+            self.processor = ResultProcessor()
+            print("[CONTROLLER] ResultProcessor initialized successfully")
+        except Exception as e:
+            print(f"[CONTROLLER] Failed to initialize ResultProcessor: {e}")
+            import traceback
+            traceback.print_exc()
+            self.processor = None
+
+        # Auto-discover and load generated agents from agents/ directory
+        self._load_generated_agents()
+
+    def run(self, user_form: UserForm) -> Dict[str, Any]:
         """
         Execute the controller agent workflow
 
@@ -34,7 +49,7 @@ class ControllerAgent:
             user_form: User form containing search criteria
 
         Returns:
-            List of all collected results from platform agents
+            Processed results with filtering and summary
         """
         print("\n" + "=" * 50)
         print("CONTROLLER AGENT - Starting execution")
@@ -42,7 +57,7 @@ class ControllerAgent:
         print(user_form)
         print("=" * 50)
 
-        all_results = []
+        results_by_platform = {}
 
         # Iterate through requested platforms
         for platform in user_form.platforms:
@@ -55,19 +70,12 @@ class ControllerAgent:
                     # Execute platform agent
                     results = agent.crawl(
                         keywords=user_form.keywords,
-                        start_date=user_form.start_date,
-                        end_date=user_form.end_date,
                         detail=user_form.detail
                     )
 
-                    # Filter results by date range
-                    # filtered_results = self._filter_by_date(results, user_form.start_date, user_form.end_date)
-                    
-                    # intended no-filtering data providing filtered_results -> results
-                    all_results.extend(results)
-
-                    # intended no-filtering data providing filtered_results -> results
-                    print(f"[CONTROLLER] Received {len(results)} results from {platform} ({len(results)} after date filtering)")
+                    # Store results by platform for processing
+                    results_by_platform[platform] = results
+                    print(f"[CONTROLLER] Received {len(results)} results from {platform}")
 
                 except Exception as e:
                     print(f"[CONTROLLER] Error executing {platform} agent: {e}")
@@ -85,17 +93,12 @@ class ControllerAgent:
                         try:
                             results = agent.crawl(
                                 keywords=user_form.keywords,
-                                start_date=user_form.start_date,
-                                end_date=user_form.end_date,
                                 detail=user_form.detail
                             )
 
-                            # Filter results by date range
-                            ## 
-                            # results = self._filter_by_date(results, user_form.start_date, user_form.end_date)
-                            ##
-                            all_results.extend(results)
-                            print(f"[CONTROLLER] Received {len(results)} results from {platform} ({len(results)} after date filtering)")
+                            # Store results by platform for processing
+                            results_by_platform[platform] = results
+                            print(f"[CONTROLLER] Received {len(results)} results from {platform}")
                         except Exception as e:
                             print(f"[CONTROLLER] Error executing auto-generated {platform} agent: {e}")
                 else:
@@ -103,10 +106,33 @@ class ControllerAgent:
                     print(f"[CONTROLLER] Available platforms: {', '.join(self.available_agents.keys())}")
 
         print("\n" + "=" * 50)
-        print(f"[CONTROLLER] Total results collected: {len(all_results)}")
+        total_raw = sum(len(r) for r in results_by_platform.values())
+        print(f"[CONTROLLER] Total raw results collected: {total_raw}")
         print("=" * 50)
 
-        return all_results
+        # Process results: filter + summarize
+        if self.processor:
+            processed_results = self.processor.process_all_results(
+                results_by_platform=results_by_platform,
+                detail=user_form.detail,
+                keywords=user_form.keywords
+            )
+        else:
+            # No processor - return raw results
+            print("[CONTROLLER] No ResultProcessor available - returning raw results")
+            total = sum(len(r) for r in results_by_platform.values())
+            processed_results = {
+                'summary': f'Found {total} results across {len(results_by_platform)} platforms. (No filtering applied)',
+                'total_results': total,
+                'results_by_platform': results_by_platform
+            }
+
+        print("\n" + "=" * 50)
+        print(f"[CONTROLLER] Processing complete")
+        print(f"  Filtered results: {processed_results.get('total_results', 0)}")
+        print("=" * 50)
+
+        return processed_results
 
     def _get_agent(self, platform: str) -> BaseAgent:
         """
@@ -134,6 +160,66 @@ class ControllerAgent:
         """
         self.available_agents[platform.lower()] = agent
         print(f"[CONTROLLER] Added agent for platform: {platform}")
+
+    def _load_generated_agents(self):
+        """
+        Auto-discover and load agent files from agents/ directory
+
+        This loads all *_agent.py files (except base_agent.py) that were
+        generated during runtime.
+        """
+        from pathlib import Path
+        import importlib.util
+
+        # Get agents directory
+        agents_dir = Path(__file__).parent / 'agents'
+
+        if not agents_dir.exists():
+            return
+
+        # Find all *_agent.py files
+        agent_files = list(agents_dir.glob('*_agent.py'))
+
+        for agent_file in agent_files:
+            platform_name = agent_file.stem.replace('_agent', '')
+
+            # Skip agents we already have and base_agent
+            if platform_name in ['base', 'google', 'reddit']:
+                continue
+
+            # Skip if already loaded
+            if platform_name in self.available_agents:
+                continue
+
+            try:
+                # Dynamically load the module
+                spec = importlib.util.spec_from_file_location(
+                    f"agents.{agent_file.stem}",
+                    agent_file
+                )
+                module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(module)
+
+                # Find the Agent class (e.g., GithubAgent)
+                class_name = f"{platform_name.replace('.', '_').replace('-', '_').title().replace('_', '')}Agent"
+
+                # Try different class name variations
+                agent_class = None
+                for attr_name in dir(module):
+                    if attr_name.endswith('Agent') and attr_name != 'BaseAgent':
+                        agent_class = getattr(module, attr_name)
+                        break
+
+                if agent_class and callable(agent_class):
+                    # Instantiate and add to available agents
+                    agent_instance = agent_class()
+                    self.available_agents[platform_name.lower()] = agent_instance
+                    print(f"[CONTROLLER] Auto-loaded agent: {platform_name}")
+
+            except Exception as e:
+                # Silently skip agents that fail to load
+                print(f"[CONTROLLER] Could not load {platform_name} agent: {e}")
+                continue
 
     def _filter_by_date(self, results: List[Dict[str, Any]], start_date, end_date) -> List[Dict[str, Any]]:
         """
@@ -197,8 +283,18 @@ class ControllerAgent:
             from agents.agent_template import AgentGenerator
             import asyncio
 
-            # Generate config
-            config = asyncio.run(auto_generate_agent_config(platform))
+            # Generate config - handle both sync and async contexts
+            try:
+                loop = asyncio.get_running_loop()
+                # Already in event loop - create task in thread pool
+                import concurrent.futures
+                with concurrent.futures.ThreadPoolExecutor() as pool:
+                    config = pool.submit(
+                        lambda: asyncio.run(auto_generate_agent_config(platform))
+                    ).result()
+            except RuntimeError:
+                # No event loop - CLI mode (uv run main.py)
+                config = asyncio.run(auto_generate_agent_config(platform))
 
             if config:
                 # Create agent
