@@ -1,9 +1,9 @@
 """
 User form model for collecting user preferences
 """
-from dataclasses import dataclass
-from typing import List
-from datetime import datetime
+from typing import List, Optional
+from datetime import datetime, date
+from pydantic import BaseModel, field_validator, model_validator
 
 
 @dataclass
@@ -96,3 +96,27 @@ class UserForm:
             f"  Detail: {self.detail}\n"
             f")"
         )
+
+
+# --- Pydantic Model for API ---
+class UserFormAPI(BaseModel):
+    """
+    Pydantic model for API request body validation
+    """
+    keywords: List[str]
+    platforms: List[str]
+    start_date: Optional[date] = None
+    end_date: Optional[date] = None
+    detail: str
+
+    @field_validator('keywords', 'platforms')
+    def check_not_empty(cls, v):
+        if not v:
+            raise ValueError("must not be empty")
+        return v
+
+    @model_validator(mode='after')
+    def check_dates(self) -> 'UserFormAPI':
+        if self.start_date and self.end_date and self.end_date < self.start_date:
+            raise ValueError("end_date must be after start_date")
+        return self

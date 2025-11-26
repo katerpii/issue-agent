@@ -104,11 +104,28 @@ if __name__ == "__main__":
 # ----------------------------------------------------------------------
 
 import redis
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from datetime import datetime, time
+import json
 
 # FastAPI 애플리케이션 초기화
 app = FastAPI(title="Issue Agent API")
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    """
+    Log detailed validation errors.
+    """
+    logger = setup_logger()
+    error_details = exc.errors()
+    logger.error(f"Validation error for request to {request.url}: {json.dumps(error_details, indent=2)}")
+    return JSONResponse(
+        status_code=422,
+        content={"detail": error_details},
+    )
 
 # CORS 미들웨어 설정
 app.add_middleware(
@@ -146,3 +163,37 @@ async def increment_visit_count():
         return {"visits": visit_count}
     except Exception as e:
         return {"error": f"An error occurred with Redis: {e}"}, 500
+
+# 이슈 에이전트 실행 엔드포인트
+@app.post("/api/run")
+async def run_issue_agent(form_data: UserFormAPI):
+    """
+    Run the issue agent with the provided form data.
+    """
+    logger = setup_logger()
+    try:
+        # Pydantic 모델(UserFormAPI)을 dataclass(UserForm)로 변환
+        user_form = UserForm(
+            keywords=form_data.keywords,
+            platforms=form_data.platforms,
+            start_date=datetime.combine(form_data.start_date, time.min),
+            end_date=datetime.combine(form_data.end_date, time.max),
+            detail=form_data.detail
+        )
+
+        # 컨트롤러 에이전트 초기화 및 실행
+        controller = ControllerAgent()
+        logger.info(f"Initialized: {controller}")
+        
+        results = controller.run(user_form)
+        
+        logger.info("Pipeline execution completed successfully!")
+        
+        return {"results": results}
+
+    except ValueError as e:
+        logger.error(f"Validation error: {e}")
+        raise HTTPException(status_code=422, detail=str(e))
+    except Exception as e:
+        logger.error(f"Unexpected error in /api/run: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="An unexpected error occurred.")
