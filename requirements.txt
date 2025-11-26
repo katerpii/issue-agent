@@ -24,3 +24,9 @@ python-dotenv>=1.0.0
 
 # Rate limiting
 ratelimit>=2.2.1
+
+# FastAPI and Uvicorn for backend
+fastapi
+uvicorn
+python-multipart
+redis

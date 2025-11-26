@@ -1,0 +1,43 @@
+
+services:
+  # 1. Frontend Service (JSP on Tomcat)
+  frontend:
+    build: ./frontend
+    ports:
+      - "8080:8080"
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+  # 2. Backend Service (Your Python App)
+  backend:
+    build:
+      context: . # 현재 디렉터리를 빌드 컨텍스트로 사용
+      dockerfile: Dockerfile.backend # 우리가 생성한 백엔드 Dockerfile을 지정
+    ports:
+      - "5000:5000"
+    volumes:
+      # 코드를 수정했을 때 컨테이너를 다시 빌드하지 않고 바로 적용하기 위해 볼륨을 마운트합니다.
+      - .:/app
+    environment:
+      - REDIS_HOST=redis # 코드에서 Redis에 접속할 때 사용할 호스트 이름
+      - REDIS_PORT=6379
+    depends_on:
+      - redis
+    networks:
+      - app-network
+
+  # 3. Redis Service
+  redis:
+    image: "redis:7-alpine" # 특정 버전의 redis-alpine 이미지 사용
+    # ports:
+      # 로컬에서 Redis-cli 등으로 직접 접속하여 디버깅하고 싶을 때 주석을 해제하세요.
+      # - "6379:6379"
+    networks:
+      - app-network
+
+# Docker Compose가 생성하고 관리할 네트워크를 정의합니다.
+networks:
+  app-network:
+    driver: bridge

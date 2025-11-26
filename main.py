@@ -98,3 +98,51 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+# ----------------------------------------------------------------------
+# --- FastAPI Web Server Code (Added for Docker Web Interface) ---
+# ----------------------------------------------------------------------
+
+import redis
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+# FastAPI 애플리케이션 초기화
+app = FastAPI(title="Issue Agent API")
+
+# CORS 미들웨어 설정
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # 개발용으로 모든 출처 허용
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Redis 클라이언트 초기화
+try:
+    redis_host = os.getenv("REDIS_HOST", "localhost")
+    redis_port = int(os.getenv("REDIS_PORT", 6379))
+    redis_client = redis.Redis(host=redis_host, port=redis_port, db=0, decode_responses=True)
+    # Redis 연결 테스트
+    redis_client.ping()
+    print("Successfully connected to Redis.")
+except redis.exceptions.ConnectionError as e:
+    print(f"Error connecting to Redis: {e}")
+    redis_client = None
+
+# 루트 엔드포인트
+@app.get("/")
+async def read_root():
+    return {"message": "Welcome to the Issue Agent API!"}
+
+# 방문 횟수 API 엔드포인트
+@app.get("/api/visit")
+async def increment_visit_count():
+    if not redis_client:
+        return {"error": "Redis connection not available"}, 500
+    try:
+        visit_count = redis_client.incr("visits")
+        return {"visits": visit_count}
+    except Exception as e:
+        return {"error": f"An error occurred with Redis: {e}"}, 500
