@@ -4,6 +4,7 @@ User form model for collecting user preferences
 from typing import List, Optional
 from datetime import datetime, date
 from pydantic import BaseModel, field_validator, model_validator
+from dataclasses import dataclass
 
 
 @dataclass

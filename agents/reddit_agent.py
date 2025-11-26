@@ -74,8 +74,19 @@ class RedditAgent(BaseAgent):
         results = []
 
         try:
-            # Run async crawl in sync context
-            results = asyncio.run(self._crawl_async(query, start_date, end_date))
+            # Check if we're already in an async context (e.g., FastAPI)
+            try:
+                loop = asyncio.get_running_loop()
+                # Already in event loop - create task in thread pool
+                import concurrent.futures
+                with concurrent.futures.ThreadPoolExecutor() as pool:
+                    results = pool.submit(
+                        lambda: asyncio.run(self._crawl_async(query, start_date, end_date))
+                    ).result()
+            except RuntimeError:
+                # No event loop - CLI mode (uv run main.py)
+                results = asyncio.run(self._crawl_async(query, start_date, end_date))
+
             print(f"  Found {len(results)} results")
 
         except Exception as e:

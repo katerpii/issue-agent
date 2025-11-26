@@ -21,6 +21,7 @@ from models.user_form import UserForm
 from controller import ControllerAgent
 from config.settings import Settings
 from utils.logger import setup_logger, log_results
+from models.user_form import UserForm, UserFormAPI
 
 
 def print_banner():
