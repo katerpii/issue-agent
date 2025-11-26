@@ -421,3 +421,150 @@ async def run_issue_agent(form_data: UserFormAPI):
     except Exception as e:
         logger.error(f"Unexpected error in /api/run: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="An unexpected error occurred.")
+
+# ============================================
+# Subscription API - Email-based
+# ============================================
+
+from pydantic import BaseModel, EmailStr
+
+class SubscriptionCreate(BaseModel):
+    email: EmailStr
+    notification_time: str  # HH:MM format
+    keywords: list
+    platforms: list
+    detail: str = ""
+
+@app.post("/api/subscriptions")
+async def create_subscription_endpoint(subscription: SubscriptionCreate):
+    """Create a new email-based subscription"""
+    logger = setup_logger()
+
+    if not redis_client:
+        raise HTTPException(status_code=503, detail="Redis not available")
+
+    try:
+        import time
+
+        # Generate unique subscription ID
+        subscription_id = hashlib.md5(f"{subscription.email}:{time.time()}".encode()).hexdigest()[:12]
+
+        subscription_data = {
+            'subscription_id': subscription_id,
+            'email': subscription.email,
+            'notification_time': subscription.notification_time,
+            'keywords': subscription.keywords,
+            'platforms': subscription.platforms,
+            'detail': subscription.detail,
+            'created_at': time.time(),
+            'last_checked': None,
+            'active': True
+        }
+
+        # Store subscription
+        key = f"subscription:{subscription.email}:{subscription_id}"
+        redis_client.set(key, json_lib.dumps(subscription_data, ensure_ascii=False))
+
+        # Add to email's subscription list
+        redis_client.sadd(f"email:{subscription.email}:subscriptions", subscription_id)
+
+        logger.info(f"Created subscription {subscription_id} for {subscription.email}")
+
+        return {
+            "subscription_id": subscription_id,
+            "message": "Subscription created successfully",
+            "email": subscription.email,
+            "notification_time": subscription.notification_time
+        }
+    except Exception as e:
+        logger.error(f"Error creating subscription: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/subscriptions/{email}")
+async def list_subscriptions_by_email(email: str):
+    """Get all subscriptions for an email"""
+    logger = setup_logger()
+
+    if not redis_client:
+        raise HTTPException(status_code=503, detail="Redis not available")
+
+    try:
+        subscription_ids = redis_client.smembers(f"email:{email}:subscriptions")
+        subscriptions = []
+
+        for sub_id in subscription_ids:
+            key = f"subscription:{email}:{sub_id}"
+            data = redis_client.get(key)
+            if data:
+                subscriptions.append(json_lib.loads(data))
+
+        logger.info(f"Retrieved {len(subscriptions)} subscriptions for {email}")
+
+        return {"subscriptions": subscriptions}
+    except Exception as e:
+        logger.error(f"Error retrieving subscriptions: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.delete("/api/subscriptions/{email}/{subscription_id}")
+async def delete_subscription_endpoint(email: str, subscription_id: str):
+    """Delete a subscription"""
+    logger = setup_logger()
+
+    if not redis_client:
+        raise HTTPException(status_code=503, detail="Redis not available")
+
+    try:
+        key = f"subscription:{email}:{subscription_id}"
+        redis_client.delete(key)
+        redis_client.srem(f"email:{email}:subscriptions", subscription_id)
+
+        logger.info(f"Deleted subscription {subscription_id} for {email}")
+
+        return {"message": "Subscription deleted successfully"}
+    except Exception as e:
+        logger.error(f"Error deleting subscription: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/subscriptions/{email}/{subscription_id}/test")
+async def test_subscription_endpoint(email: str, subscription_id: str):
+    """
+    Manually trigger a subscription check for testing (immediate execution)
+    """
+    logger = setup_logger()
+    logger.info(f"[TEST] Manual test triggered for subscription {subscription_id}")
+
+    try:
+        # Get subscription from Redis
+        key = f"subscription:{email}:{subscription_id}"
+        data = redis_client.get(key)
+
+        if not data:
+            raise HTTPException(status_code=404, detail="Subscription not found")
+
+        subscription = json_lib.loads(data)
+
+        # Import here to avoid circular dependency
+        from subscription_checker import check_subscription
+
+        # Run subscription check immediately
+        new_count = check_subscription(subscription)
+
+        logger.info(f"[TEST] Test completed. Found {new_count} new results")
+
+        return {
+            "message": "Test completed successfully",
+            "subscription_id": subscription_id,
+            "email": email,
+            "new_results_count": new_count,
+            "keywords": subscription['keywords'],
+            "platforms": subscription['platforms']
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"[TEST] Error testing subscription: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))

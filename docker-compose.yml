@@ -37,6 +37,30 @@ services:
     networks:
       - app-network
 
+  # 4. Subscription Checker (Scheduler)
+  scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    command: python subscription_checker.py
+    volumes:
+      - .:/app
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      # SMTP 설정 (Gmail 예시)
+      - SMTP_SERVER=smtp.gmail.com
+      - SMTP_PORT=587
+      - SMTP_USERNAME=${SMTP_USERNAME}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - SENDER_EMAIL=${SENDER_EMAIL}
+      - SENDER_NAME=Issue Agent Bot
+    depends_on:
+      - redis
+    networks:
+      - app-network
+    restart: unless-stopped
+
 # Docker Compose가 생성하고 관리할 네트워크를 정의합니다.
 networks:
   app-network:
