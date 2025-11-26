@@ -1,0 +1,20 @@
+name: 01. Style & Formatting Check
+
+on:
+  pull_request:
+    branches: [ develop ]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install Lint Dependencies
+        run: pip install flake8
+      - name: Run Flake8 Check
+        # 최대 줄 길이, 복잡도 등을 지정하여 검사 실행
+        run: flake8 . --max-complexity=10 --max-line-length=120
