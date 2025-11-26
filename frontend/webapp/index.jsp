@@ -2,21 +2,7 @@
 <html>
 <head>
     <title>Issue Agent Web UI</title>
-    <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 2rem; background-color: #f8f9fa; color: #333; }
-        .container { max-width: 800px; margin: 0 auto; background-color: #fff; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        h1, h2 { color: #007BFF; }
-        h1 { text-align: center; }
-        form { display: grid; grid-template-columns: 1fr; gap: 1rem; }
-        label { font-weight: bold; }
-        input[type="text"], input[type="date"], textarea { width: 100%; padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        button { padding: 0.75rem 1.5rem; font-size: 1rem; cursor: pointer; background-color: #007BFF; color: white; border: none; border-radius: 4px; transition: background-color 0.2s; }
-        button:hover { background-color: #0056b3; }
-        #results-container { margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #eee; }
-        #results { white-space: pre-wrap; background-color: #f1f3f5; padding: 1rem; border-radius: 4px; word-wrap: break-word; }
-        .spinner { display: none; margin: 1rem auto; width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    </style>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
@@ -43,7 +29,7 @@
         <div id="results-container">
             <h2>Results</h2>
             <div class="spinner" id="loading-spinner"></div>
-            <pre id="results">(Results will appear here)</pre>
+            <div id="results">(Results will appear here)</div>
         </div>
     </div>
 
@@ -101,44 +87,59 @@
                 if (responseData.results) {
                     const results = responseData.results;
 
-                    // Format output nicely
-                    let output = '';
+                    let outputHtml = '';
 
                     // Show summary
                     if (results.summary) {
-                        output += '=== SUMMARY ===\n';
-                        output += results.summary + '\n\n';
+                        outputHtml += '<div class="summary-section">';
+                        outputHtml += '<h3>요약</h3>';
+                        outputHtml += '<p>' + results.summary + '</p>';
+                        outputHtml += '</div>';
                     }
 
                     // Show total
                     const totalResults = results.total_results || 0;
-                    output += 'Total filtered results: ' + totalResults + '\n\n';
+                    outputHtml += '<div class="total-results-section">';
+                    outputHtml += '<h3>총 필터링된 결과</h3>';
+                    outputHtml += '<p>' + totalResults + '건</p>';
+                    outputHtml += '</div>';
 
                     // Show results by platform
                     if (results.results_by_platform) {
-                        output += '=== RESULTS BY PLATFORM ===\n\n';
+                        outputHtml += '<div class="platform-results-section">';
+                        outputHtml += '<h2>플랫폼별 결과</h2>';
                         for (const [platform, items] of Object.entries(results.results_by_platform)) {
-                            output += '--- ' + platform.toUpperCase() + ' (' + items.length + ' results) ---\n';
-                            items.forEach(function(item, idx) {
-                                output += '\n[' + (idx + 1) + '] ' + item.title + '\n';
-                                output += '    URL: ' + item.url + '\n';
-                                if (item.relevance_score !== undefined) {
-                                    output += '    Relevance Score: ' + item.relevance_score + '/10\n';
-                                }
-                                if (item.relevance_reason) {
-                                    output += '    Reason: ' + item.relevance_reason + '\n';
-                                }
-                                if (item.content && item.content.length > 0) {
-                                    output += '    Preview: ' + item.content.substring(0, 150) + '...\n';
-                                }
-                            });
-                            output += '\n';
+                            outputHtml += '<div class="platform-section">';
+                            outputHtml += '<h3>' + platform.toUpperCase() + ' (' + items.length + '건)</h3>';
+                            if (items.length > 0) {
+                                outputHtml += '<ul>';
+                                items.forEach(function(item, idx) {
+                                    outputHtml += '<li class="result-item">';
+                                    outputHtml += '<h4>[' + (idx + 1) + '] ' + item.title + '</h4>';
+                                    outputHtml += '<p>URL: <a href="' + item.url + '" target="_blank">' + item.url + '</a></p>';
+                                    if (item.relevance_score !== undefined) {
+                                        outputHtml += '<p>관련성 점수: ' + item.relevance_score + '/10</p>';
+                                    }
+                                    if (item.relevance_reason) {
+                                        outputHtml += '<p>이유: ' + item.relevance_reason + '</p>';
+                                    }
+                                    if (item.content && item.content.length > 0) {
+                                        outputHtml += '<p>미리보기: ' + item.content.substring(0, 150) + '...</p>';
+                                    }
+                                    outputHtml += '</li>';
+                                });
+                                outputHtml += '</ul>';
+                            } else {
+                                outputHtml += '<p>결과 없음.</p>';
+                            }
+                            outputHtml += '</div>';
                         }
+                        outputHtml += '</div>';
                     }
 
-                    resultsEl.textContent = output || 'No results found.';
+                    resultsEl.innerHTML = outputHtml || '결과를 찾을 수 없습니다.';
                 } else {
-                    resultsEl.textContent = 'No results found.';
+                    resultsEl.innerHTML = '결과를 찾을 수 없습니다.';
                 }
 
             } catch (error) {
