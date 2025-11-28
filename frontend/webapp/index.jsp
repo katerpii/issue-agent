@@ -1,11 +1,10 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <html>
 <head>
-    <title>Issue Agent Web UI</title>
+    <title>Issue Agent</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-
     <div class="container">
         <h1>🤖 Issue Agent</h1>
         <p class="subtitle">AI가 찾아주는 맞춤형 이슈 알림 서비스</p>
@@ -13,14 +12,12 @@
         <form id="issue-form">
             <div>
                 <label for="keywords">🔍 검색 키워드</label>
-                <input type="text" id="keywords" name="keywords" required
-                       value="gemini 1.5"
+                <input type="text" id="keywords" name="keywords"
                        placeholder="검색할 키워드를 입력하세요 (쉼표로 구분)">
             </div>
             <div>
                 <label for="platforms">🌐 플랫폼</label>
-                <input type="text" id="platforms" name="platforms" required
-                       value="google"
+                <input type="text" id="platforms" name="platforms"
                        placeholder="예: google, reddit, asec">
             </div>
             <div>
@@ -32,9 +29,8 @@
         </form>
 
         <div id="results-container">
-            <h2>Results</h2>
             <div class="spinner" id="loading-spinner"></div>
-            <div id="results">(Results will appear here)</div>
+            <div id="results"></div>
 
             <!-- Confirm Agent Button (shown after results) -->
             <button id="confirm-agent-btn">🤖 Confirm Agent - 나만의 알림봇 만들기!</button>
@@ -91,10 +87,19 @@
         form.addEventListener('submit', async function(event) {
             event.preventDefault();
 
+            //유효성 검사
+            if (form.keywords.value=="") {
+                alert("검색할 키워드를 입력해주세요.");
+                return;
+            } else if (form.platforms.value=="") {
+                alert("검색할 플랫폼을 입력해주세요.");
+                return;
+            }
+
             spinner.style.display = 'block';
             resultsEl.textContent = 'Running agent...';
             runAgentButton.disabled = true;
-            runAgentButton.style.backgroundColor = '#6c757d';
+            //runAgentButton.style.backgroundColor = '#6c757d';
 
             const formData = new FormData(form);
             const data = {
@@ -132,7 +137,7 @@
                 if (responseData.results) {
                     const results = responseData.results;
 
-                    let outputHtml = '';
+                    let outputHtml = '<h2>Results</h2>';
 
                     // Show summary
                     if (results.summary) {
@@ -199,7 +204,7 @@
             } finally {
                 spinner.style.display = 'none';
                 runAgentButton.disabled = false;
-                runAgentButton.style.backgroundColor = '#007BFF';
+                runAgentButton.style.backgroundColor = '#719df3';
             }
         });
 
