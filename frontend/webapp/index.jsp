@@ -204,6 +204,7 @@
             } finally {
                 spinner.style.display = 'none';
                 runAgentButton.disabled = false;
+                //runAgentButton.style.backgroundColor = '#007BFF'
                 runAgentButton.style.backgroundColor = '#719df3';
             }
         });
