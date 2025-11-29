@@ -99,7 +99,7 @@
             spinner.style.display = 'block';
             resultsEl.textContent = 'Running agent...';
             runAgentButton.disabled = true;
-            //runAgentButton.style.backgroundColor = '#6c757d';
+            runAgentButton.style.backgroundColor = '#6c757d';
 
             const formData = new FormData(form);
             const data = {
@@ -166,7 +166,7 @@
                                 items.forEach(function(item, idx) {
                                     outputHtml += '<li class="result-item">';
                                     outputHtml += '<h4>[' + (idx + 1) + '] ' + item.title + '</h4>';
-                                    outputHtml += '<p>URL: <a href="' + item.url + '" target="_blank">' + item.url + '</a></p>';
+                                    outputHtml += '<p>URL: <a href="' + item.url + '" target="_blank" class="ellipsis">' + item.url + '</a></p>';
                                     if (item.relevance_score !== undefined) {
                                         outputHtml += '<p>관련성 점수: ' + item.relevance_score + '/10</p>';
                                     }

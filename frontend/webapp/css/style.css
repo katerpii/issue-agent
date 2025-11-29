@@ -75,9 +75,6 @@ input[type="email"],
 input[type="time"],
 textarea {
     width: 100%;
-    /*크키 고정
-    resize: none;*/
-    /*너비만 고정*/
     resize: vertical;
     padding: 16px;
     border: 1.5px solid #e5e8eb;
