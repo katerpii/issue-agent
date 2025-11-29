@@ -195,6 +195,12 @@ button:disabled {
     border-bottom: 2px solid #f1f3f5;
 }
 
+.ellipsis {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .result-item {
     margin-bottom: 20px;
     padding: 20px;
