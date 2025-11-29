@@ -27,8 +27,6 @@ class BaseAgent(ABC):
     def crawl(
         self,
         keywords: List[str],
-        start_date: datetime,
-        end_date: datetime,
         detail: str = ""
     ) -> List[Dict[str, Any]]:
         """
@@ -36,15 +34,12 @@ class BaseAgent(ABC):
 
         Args:
             keywords: List of keywords to search for
-            start_date: Start date for search period
-            end_date: End date for search period
             detail: Additional detail for filtering
 
         Returns:
             List of crawled items, each containing:
                 - title: str
                 - url: str
-                - date: datetime
                 - content: str
                 - platform: str
         """
