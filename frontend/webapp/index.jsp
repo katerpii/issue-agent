@@ -12,12 +12,12 @@
         <form id="issue-form">
             <div>
                 <label for="keywords">🔍 검색 키워드</label>
-                <input type="text" id="keywords" name="keywords"
+                <input type="text" id="keywords" name="keywords" required
                        placeholder="검색할 키워드를 입력하세요 (쉼표로 구분)">
             </div>
             <div>
                 <label for="platforms">🌐 플랫폼</label>
-                <input type="text" id="platforms" name="platforms"
+                <input type="text" id="platforms" name="platforms" required
                        placeholder="예: google, reddit, asec">
             </div>
             <div>
@@ -86,15 +86,6 @@
 
         form.addEventListener('submit', async function(event) {
             event.preventDefault();
-
-            //유효성 검사
-            if (form.keywords.value=="") {
-                alert("검색할 키워드를 입력해주세요.");
-                return;
-            } else if (form.platforms.value=="") {
-                alert("검색할 플랫폼을 입력해주세요.");
-                return;
-            }
 
             spinner.style.display = 'block';
             resultsEl.textContent = 'Running agent...';
@@ -166,7 +157,7 @@
                                 items.forEach(function(item, idx) {
                                     outputHtml += '<li class="result-item">';
                                     outputHtml += '<h4>[' + (idx + 1) + '] ' + item.title + '</h4>';
-                                    outputHtml += '<p>URL: <a href="' + item.url + '" target="_blank">' + item.url + '</a></p>';
+                                    outputHtml += '<p class="ellipsis">URL: <a href="' + item.url + '" target="_blank">' + item.url + '</a></p>';
                                     if (item.relevance_score !== undefined) {
                                         outputHtml += '<p>관련성 점수: ' + item.relevance_score + '/10</p>';
                                     }
