@@ -19,3 +19,6 @@ https://asec.ahnlab.com
 
 https://apple.com
 https://www.apple.com
+
+https://asec.com
+https://www.asec.com

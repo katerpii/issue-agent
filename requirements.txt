@@ -24,3 +24,19 @@ python-dotenv>=1.0.0
 
 # Rate limiting
 ratelimit>=2.2.1
+
+# FastAPI and Uvicorn for backend
+fastapi
+uvicorn
+python-multipart
+redis
+
+# LLM for result processing
+langchain-google-genai>=2.0.0  # Gemini (FREE!)
+langchain-anthropic>=0.1.0     # Claude (paid, optional)
+
+# Email validation for Pydantic
+email-validator>=2.0.0
+
+# Scheduling for subscription checker
+schedule>=1.2.0
