@@ -90,7 +90,7 @@
             spinner.style.display = 'block';
             resultsEl.textContent = 'Running agent...';
             runAgentButton.disabled = true;
-            //runAgentButton.style.backgroundColor = '#6c757d';
+            runAgentButton.style.backgroundColor = '#e6e8eB';
 
             const formData = new FormData(form);
             const data = {
@@ -195,7 +195,6 @@
             } finally {
                 spinner.style.display = 'none';
                 runAgentButton.disabled = false;
-                //runAgentButton.style.backgroundColor = '#007BFF'
                 runAgentButton.style.backgroundColor = '#719df3';
             }
         });
