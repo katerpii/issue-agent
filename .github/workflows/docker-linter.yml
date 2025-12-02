@@ -1,0 +1,23 @@
+# .github/workflows/docker-linter.yml
+# 한국어: Dockerfile 린터 워크플로우 (Hadolint)
+# Dockerfile.backend 파일의 품질과 보안 취약점을 검사합니다.
+name: Dockerfile Linter
+
+on:
+  pull_request:
+    paths:
+      - 'Dockerfile.backend' # Dockerfile.backend 변경 시에만 실행
+
+jobs:
+  lint-dockerfile:
+    name: Lint Dockerfile
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Hadolint
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: Dockerfile.backend # 린트할 Dockerfile 지정
+          # exit-code: 1 # 경고나 에러 발생 시 워크플로우 실패 처리 (선택 사항)
