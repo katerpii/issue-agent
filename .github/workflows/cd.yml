@@ -3,12 +3,12 @@
 name: Continuous Deployment
 
 on:
-  push:
-    branches:
-      - main
-    tags:
-      - 'v*.*.*'
-  workflow_dispatch:
+  # push:
+  #   branches:
+  #     - main
+  #   tags:
+  #     - 'v*.*.*'
+  workflow_dispatch:  # 수동 실행만 가능 (서버 설정 후 사용)
     inputs:
       environment:
         description: 'Deployment environment'
@@ -81,6 +81,8 @@ jobs:
     name: Deploy to Server
     needs: build-and-push-images
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # 커밋 코멘트 작성 권한
     environment:
       name: ${{ github.event.inputs.environment || 'production' }}
 
@@ -98,6 +100,7 @@ jobs:
           fi
 
       - name: Deploy via SSH
+        if: ${{ secrets.DEPLOY_HOST != '' }}  # DEPLOY_HOST가 설정되어 있을 때만 실행
         uses: appleboy/ssh-action@v1.0.0
         env:
           IMAGE_TAG: ${{ steps.vars.outputs.image_tag }}
@@ -144,6 +147,7 @@ jobs:
             docker-compose -f docker-compose.prod.yml ps
 
       - name: Health check
+        if: ${{ secrets.DEPLOY_HOST != '' }}  # DEPLOY_HOST가 설정되어 있을 때만 실행
         run: |
           sleep 30
           response=$(curl -s -o /dev/null -w "%{http_code}" http://${{ secrets.DEPLOY_HOST }}:5000/health || echo "000")
