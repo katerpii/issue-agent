@@ -90,7 +90,7 @@
             spinner.style.display = 'block';
             resultsEl.textContent = 'Running agent...';
             runAgentButton.disabled = true;
-            runAgentButton.style.backgroundColor = '#e5e8eb';
+            runAgentButton.style.backgroundColor = '#e6e8eB';
 
             const formData = new FormData(form);
             const data = {
