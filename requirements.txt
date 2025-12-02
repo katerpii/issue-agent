@@ -10,7 +10,7 @@ lxml>=4.9.0
 praw>=7.7.0
 
 # Browser automation for bypassing bot detection
-browser-use # Cloud browser with stealth mode
+browser-use>=0.10.1 # Cloud browser with stealth mode
 undetected-chromedriver>=3.5.0
 selenium>=4.15.0
 
