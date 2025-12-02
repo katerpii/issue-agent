@@ -5,7 +5,6 @@ This module uses ChatBrowserUse's Agent to analyze web pages and extract
 appropriate CSS selectors for crawling search results from any platform.
 """
 from typing import Dict, Optional
-from urllib.parse import quote_plus
 import json
 import re
 
@@ -78,7 +77,7 @@ class SelectorExtractor:
             Dictionary of selectors or None if failed
         """
         if not BROWSER_USE_AVAILABLE:
-            print(f"  [ERROR] ChatBrowserUse not available")
+            print("  [ERROR] ChatBrowserUse not available")
             return None
 
         # Extract base domain from search_url
@@ -184,7 +183,7 @@ Respond in this EXACT format (JSON):
 Only return valid JSON, nothing else."""
 
         try:
-            print(f"  Running Agent...")
+            print("  Running Agent...")
 
             # Create ChatBrowserUse Agent (uses Browser Use Cloud's built-in LLM)
             browser = Browser(use_cloud=True)

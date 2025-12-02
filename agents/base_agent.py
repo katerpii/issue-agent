@@ -3,7 +3,6 @@ Base agent class for platform-specific crawling agents
 """
 from abc import ABC, abstractmethod
 from typing import List, Dict, Any
-from datetime import datetime
 
 
 class BaseAgent(ABC):

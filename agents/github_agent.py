@@ -57,8 +57,8 @@ class GithubAgent(BaseAgent):
         print(f"  Max pages: {max_pages}")
 
         if not self.browser_use_available:
-            print(f"  [ERROR] browser-use is not available.")
-            print(f"  Install with: pip install browser-use")
+            print("  [ERROR] browser-use is not available.")
+            print("  Install with: pip install browser-use")
             return []
 
         results = []
@@ -101,7 +101,7 @@ class GithubAgent(BaseAgent):
         session = Browser(use_cloud=True)
 
         try:
-            print(f"  Starting browser-use cloud session...")
+            print("  Starting browser-use cloud session...")
             await session.start()
             page = await session.get_current_page()
 
@@ -129,7 +129,7 @@ class GithubAgent(BaseAgent):
             traceback.print_exc()
         finally:
             await session.stop()
-            print(f"  Browser session closed")
+            print("  Browser session closed")
 
         return results
 
@@ -152,11 +152,11 @@ class GithubAgent(BaseAgent):
             await asyncio.sleep(5)
 
             # Get page HTML
-            print(f"  Getting page HTML...")
+            print("  Getting page HTML...")
             html = await page.evaluate('() => document.documentElement.outerHTML')
 
             if not html or not isinstance(html, str):
-                print(f"  Warning: Could not get page HTML")
+                print("  Warning: Could not get page HTML")
                 return results
 
 
@@ -215,7 +215,7 @@ class GithubAgent(BaseAgent):
 
     async def _go_to_next_page(self, page: Page) -> bool:
         try:
-            print(f"    Looking for Next button...")
+            print("    Looking for Next button...")
             next_selectors = [
                 'a[aria-label*="Next"]',
                 'a[aria-label*="next"]',
@@ -232,12 +232,12 @@ class GithubAgent(BaseAgent):
                         print(f"    Found Next button with selector: {selector}")
                         await element.click()
                         await asyncio.sleep(2)
-                        print(f"    Successfully navigated to next page")
+                        print("    Successfully navigated to next page")
                         return True
                 except Exception:
                     continue
 
-            print(f"    Could not find Next button")
+            print("    Could not find Next button")
             return False
 
         except Exception as e:

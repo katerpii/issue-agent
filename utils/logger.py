@@ -3,7 +3,6 @@ Logging utility for the Issue Agent system
 """
 import logging
 import sys
-from datetime import datetime
 
 
 def setup_logger(name: str = "IssueAgent", level: int = logging.INFO) -> logging.Logger:
