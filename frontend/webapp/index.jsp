@@ -90,7 +90,7 @@
             spinner.style.display = 'block';
             resultsEl.textContent = 'Running agent...';
             runAgentButton.disabled = true;
-            //runAgentButton.style.backgroundColor = '#6c757d';
+            runAgentButton.style.backgroundColor = '#e6e8eB';
 
             const formData = new FormData(form);
             const data = {
@@ -155,9 +155,8 @@
                             if (items.length > 0) {
                                 outputHtml += '<ul>';
                                 items.forEach(function(item, idx) {
-                                    outputHtml += '<li class="result-item">';
+                                    outputHtml += '<li class="result-item"><a href="' + item.url + '" target="_blank">';
                                     outputHtml += '<h4>[' + (idx + 1) + '] ' + item.title + '</h4>';
-                                    outputHtml += '<p class="ellipsis">URL: <a href="' + item.url + '" target="_blank">' + item.url + '</a></p>';
                                     if (item.relevance_score !== undefined) {
                                         outputHtml += '<p>관련성 점수: ' + item.relevance_score + '/10</p>';
                                     }
@@ -167,7 +166,7 @@
                                     if (item.content && item.content.length > 0) {
                                         outputHtml += '<p>미리보기: ' + item.content.substring(0, 150) + '...</p>';
                                     }
-                                    outputHtml += '</li>';
+                                    outputHtml += '</a></li>';
                                 });
                                 outputHtml += '</ul>';
                             } else {
@@ -195,7 +194,6 @@
             } finally {
                 spinner.style.display = 'none';
                 runAgentButton.disabled = false;
-                //runAgentButton.style.backgroundColor = '#007BFF'
                 runAgentButton.style.backgroundColor = '#719df3';
             }
         });

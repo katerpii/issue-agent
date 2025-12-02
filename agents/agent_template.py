@@ -4,7 +4,7 @@ Agent Template for generating platform-specific crawling agents
 This module provides a template system for creating new platform agents
 with consistent structure and minimal code duplication.
 """
-from typing import Dict, List, Any
+from typing import Dict, List
 from pathlib import Path
 import importlib.util
 
@@ -415,7 +415,7 @@ class {class_name}(BaseAgent):
 
             print(f"[TEMPLATE] Added {len(new_domains)} new domains to {domains_file}")
         else:
-            print(f"[TEMPLATE] No new domains to add")
+            print("[TEMPLATE] No new domains to add")
 
 
 class AgentGenerator:

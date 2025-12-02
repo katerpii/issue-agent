@@ -273,7 +273,7 @@ Return ONLY valid JSON, no other text."""
                 'results_by_platform': filtered_by_platform
             }
 
-        print(f"[PROCESSOR] Generating summary...")
+        print("[PROCESSOR] Generating summary...")
 
         # Count results
         total = sum(len(results) for results in filtered_by_platform.values())
@@ -382,7 +382,7 @@ Return ONLY the summary text, no extra formatting."""
 
             print(f"[PROCESSOR] Summary: {summary_text[:150]}...")
 
-            print(f"[PROCESSOR] Summary generation complete")
+            print("[PROCESSOR] Summary generation complete")
 
             return {
                 'summary': summary_text,
@@ -416,7 +416,7 @@ Return ONLY the summary text, no extra formatting."""
         Returns:
             Processed results with filtering and summary
         """
-        print(f"\n[PROCESSOR] Starting result processing...")
+        print("\n[PROCESSOR] Starting result processing...")
 
         # Step 1: Filter results for each platform
         filtered_by_platform = {}
@@ -438,5 +438,5 @@ Return ONLY the summary text, no extra formatting."""
             keywords=keywords
         )
 
-        print(f"[PROCESSOR] Processing complete!")
+        print("[PROCESSOR] Processing complete!")
         return processed

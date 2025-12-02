@@ -2,7 +2,7 @@
 Reddit search agent for crawling Reddit posts using browser-use
 """
 from typing import List, Dict, Any
-from datetime import datetime, timedelta
+from datetime import datetime
 import asyncio
 from urllib.parse import quote_plus
 from .base_agent import BaseAgent
@@ -61,8 +61,8 @@ class RedditAgent(BaseAgent):
         print(f"  Keywords: {', '.join(keywords)}")
 
         if not self.browser_use_available:
-            print(f"  [ERROR] browser-use is not available.")
-            print(f"  Install with: pip install browser-use")
+            print("  [ERROR] browser-use is not available.")
+            print("  Install with: pip install browser-use")
             return []
 
         query = " ".join(keywords)
@@ -112,7 +112,7 @@ class RedditAgent(BaseAgent):
         )
 
         try:
-            print(f"  Starting browser-use cloud session...")
+            print("  Starting browser-use cloud session...")
             await session.start()
 
             page = await session.get_current_page()
@@ -148,7 +148,7 @@ class RedditAgent(BaseAgent):
             traceback.print_exc()
         finally:
             await session.stop()
-            print(f"  Browser session closed")
+            print("  Browser session closed")
 
         return results
 
@@ -176,11 +176,11 @@ class RedditAgent(BaseAgent):
         try:
             await asyncio.sleep(2)
 
-            print(f"  Getting page HTML...")
+            print("  Getting page HTML...")
             html = await page.evaluate('() => document.documentElement.outerHTML')
 
             if not html or not isinstance(html, str):
-                print(f"  Warning: Could not get page HTML")
+                print("  Warning: Could not get page HTML")
                 return results
 
             results = self._parse_reddit_html(html, query, start_date, end_date)
@@ -261,7 +261,7 @@ class RedditAgent(BaseAgent):
                         post_date = datetime.fromisoformat(time_elem['datetime'].replace('Z', '+00:00'))
                         # Convert to naive datetime for comparison
                         post_date = post_date.replace(tzinfo=None)
-                    except Exception as e:
+                    except Exception:
                         pass
 
                 parsed_count += 1
@@ -292,7 +292,7 @@ class RedditAgent(BaseAgent):
                 if len(results) >= 50:
                     break
 
-            except Exception as e:
+            except Exception:
                 # Skip individual posts that fail to parse
                 continue
 

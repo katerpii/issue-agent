@@ -62,8 +62,8 @@ class GoogleAgent(BaseAgent):
         print(f"  Max pages: {max_pages}")
 
         if not self.browser_use_available:
-            print(f"  [ERROR] browser-use is not available.")
-            print(f"  Install with: pip install browser-use")
+            print("  [ERROR] browser-use is not available.")
+            print("  Install with: pip install browser-use")
             return []
 
         results = []
@@ -116,7 +116,7 @@ class GoogleAgent(BaseAgent):
 
         try:
             # Start browser
-            print(f"  Starting browser-use cloud session...")
+            print("  Starting browser-use cloud session...")
             await session.start()
 
             # Get current page
@@ -126,7 +126,7 @@ class GoogleAgent(BaseAgent):
             encoded_query = quote_plus(query)
             url = f"https://www.google.com/search?q={encoded_query}&num=20"
 
-            print(f"  Navigating to Google...")
+            print("  Navigating to Google...")
             await page.goto(url)
 
             # Wait for page to load (human-like behavior)
@@ -157,7 +157,7 @@ class GoogleAgent(BaseAgent):
         finally:
             # Stop browser session
             await session.stop()
-            print(f"  Browser session closed")
+            print("  Browser session closed")
 
         return results
 
@@ -180,11 +180,11 @@ class GoogleAgent(BaseAgent):
             await asyncio.sleep(2)
 
             # Get page HTML using JavaScript
-            print(f"  Getting page HTML...")
+            print("  Getting page HTML...")
             html = await page.evaluate('() => document.documentElement.outerHTML')
 
             if not html or not isinstance(html, str):
-                print(f"  Warning: Could not get page HTML")
+                print("  Warning: Could not get page HTML")
                 return results
 
             # Parse with BeautifulSoup
@@ -242,7 +242,7 @@ class GoogleAgent(BaseAgent):
                     }
                     results.append(result)
 
-                except Exception as e:
+                except Exception:
                     # Skip individual results that fail
                     continue
 
@@ -269,7 +269,7 @@ class GoogleAgent(BaseAgent):
             # Try multiple methods to find and click the "Next" button
 
             # Method 1: Find "Next" button by aria-label
-            print(f"    Looking for Next button...")
+            print("    Looking for Next button...")
             next_selectors = [
                 'a#pnnext',  # Next button ID
                 'a[aria-label*="Next"]',  # Next button with aria-label
@@ -297,10 +297,10 @@ class GoogleAgent(BaseAgent):
                         # Wait for navigation
                         await asyncio.sleep(2)
 
-                        print(f"    Successfully navigated to next page")
+                        print("    Successfully navigated to next page")
                         return True
 
-                except Exception as e:
+                except Exception:
                     # Try next selector
                     continue
 
@@ -315,15 +315,15 @@ class GoogleAgent(BaseAgent):
                 ''')
 
                 if pagination_html:
-                    print(f"    Found next page URL via JavaScript")
+                    print("    Found next page URL via JavaScript")
                     await page.goto(pagination_html)
                     await asyncio.sleep(2)
                     return True
 
-            except Exception as e:
+            except Exception:
                 pass
 
-            print(f"    Could not find Next button")
+            print("    Could not find Next button")
             return False
 
         except Exception as e:

@@ -3,7 +3,7 @@ Retry utility for handling transient failures
 """
 import time
 import logging
-from typing import Callable, Any, Optional, Type, Tuple
+from typing import Callable, Any, Type, Tuple
 from functools import wraps
 
 

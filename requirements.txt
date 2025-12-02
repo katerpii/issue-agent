@@ -10,7 +10,7 @@ lxml>=4.9.0
 praw>=7.7.0
 
 # Browser automation for bypassing bot detection
-browser-use>=0.1.0  # Cloud browser with stealth mode
+browser-use>=0.10.1 # Cloud browser with stealth mode
 undetected-chromedriver>=3.5.0
 selenium>=4.15.0
 
@@ -40,3 +40,8 @@ email-validator>=2.0.0
 
 # Scheduling for subscription checker
 schedule>=1.2.0
+
+# Testing dependencies
+pytest>=8.0.0
+pytest-asyncio>=0.23.0
+pytest-mock>=3.12.0

@@ -1,7 +1,6 @@
 """
 Configuration settings for the Issue Agent system
 """
-import os
 from pathlib import Path
 
 
