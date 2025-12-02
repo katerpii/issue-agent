@@ -232,6 +232,56 @@ class MyCustomAgent(BaseAgent):
 controller.add_agent('mycustom', MyCustomAgent())
 ```
 
+## 배포 (Deployment)
+
+### Docker Compose를 사용한 배포
+
+이 프로젝트는 Docker Compose를 사용하여 쉽게 배포할 수 있습니다.
+
+#### 빠른 시작
+
+```bash
+# 1. 환경 변수 설정
+cp .env.prod.example .env.prod
+nano .env.prod  # 필수 값들을 채워넣으세요
+
+# 2. 배포 실행
+./scripts/deploy.sh production latest
+```
+
+#### 포함된 서비스
+
+- **Frontend**: JSP 기반 웹 인터페이스 (포트 8080)
+- **Backend**: FastAPI 기반 REST API (포트 5000)
+- **Redis**: 데이터 저장소 (포트 6379)
+- **Scheduler**: 주기적 구독 확인 및 이메일 발송
+
+#### CI/CD 파이프라인
+
+GitHub Actions를 통한 자동 배포:
+
+1. **CI (Pull Request)**: 린팅, 테스트, 보안 스캔
+2. **Build & Push**: Docker 이미지 빌드 및 GitHub Container Registry에 푸시
+3. **CD (Main branch)**: 서버에 자동 배포
+
+자세한 배포 가이드는 [DEPLOYMENT.md](DEPLOYMENT.md)를 참조하세요.
+
+### 주요 배포 명령어
+
+```bash
+# 서비스 시작
+docker-compose -f docker-compose.prod.yml up -d
+
+# 로그 확인
+docker-compose -f docker-compose.prod.yml logs -f
+
+# 서비스 중지
+docker-compose -f docker-compose.prod.yml down
+
+# 이전 버전으로 롤백
+./scripts/rollback.sh production v1.0.0
+```
+
 ## 라이선스
 
 MIT License

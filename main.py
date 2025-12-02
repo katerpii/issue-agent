@@ -153,6 +153,27 @@ except redis.exceptions.ConnectionError as e:
 async def read_root():
     return {"message": "Welcome to the Issue Agent API!"}
 
+# Health check 엔드포인트
+@app.get("/health")
+async def health_check():
+    """Health check endpoint for monitoring and deployment"""
+    health_status = {
+        "status": "healthy",
+        "service": "issue-agent-api",
+        "redis": "disconnected"
+    }
+
+    # Redis 연결 확인
+    if redis_client:
+        try:
+            redis_client.ping()
+            health_status["redis"] = "connected"
+        except Exception as e:
+            health_status["redis"] = f"error: {str(e)}"
+            health_status["status"] = "degraded"
+
+    return health_status
+
 # 방문 횟수 API 엔드포인트
 @app.get("/api/visit")
 async def increment_visit_count():
