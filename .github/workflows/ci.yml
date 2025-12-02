@@ -3,6 +3,9 @@
 name: Continuous Integration
 
 on:
+  push:
+    branches:
+      - develop
   pull_request:
     branches:
       - main
@@ -27,37 +30,38 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-  run-integration-tests:
-    name: Run Integration Tests
+
+  test-and-coverage:
+    name: Test and Calculate Coverage
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Build Docker image for testing
+        run: docker build -t integration-test-env -f Dockerfile.backend .
+
+      - name: Run tests and generate coverage report
+        run: |
+          docker run \
+            --name test-container \
+            --env BROWSER_USE_API_KEY=${{ secrets.BROWSER_USE_API_KEY }} \
+            --env GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }} \
+            --env SMTP_USERNAME=${{ secrets.SMTP_USERNAME }} \
+            --env SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }} \
+            --env RECIPIENT_EMAIL_FOR_TEST="test@example.com" \
+            integration-test-env \
+            pytest --cov=. --cov-report=xml tests/integration/
+
+      - name: Copy coverage report from container
+        run: docker cp test-container:/app/coverage.xml .
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
         with:
-          python-version: '3.11'
-          cache: 'pip'
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          # 통합 테스트에 필요한 모든 라이브러리를 설치합니다.
-          pip install -r requirements.txt
-
-      - name: Run Integration Tests
-        # 테스트 실행에 필요한 API 키 및 SMTP 정보를 환경 변수로 주입합니다.
-        env:
-          BROWSER_USE_API_KEY: ${{ secrets.BROWSER_USE_API_KEY }}
-          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
-          SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
-          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
-          # 이메일 테스트를 위한 수신자 이메일 (실제 발송은 모킹되므로 어떤 값이든 가능)
-          RECIPIENT_EMAIL_FOR_TEST: "test@example.com"
-        run: |
-          export PYTHONPATH=$PYTHONPATH:.
-          pytest tests/integration/
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage.xml
+          fail_ci_if_error: true
 
   security-scan:
     name: Security Scan
@@ -71,7 +75,6 @@ jobs:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@0.24.0
         with:
-
           scan-type: 'fs'
           scan-ref: '.'
           ignore-unfixed: true
