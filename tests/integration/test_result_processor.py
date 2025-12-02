@@ -43,7 +43,9 @@ def test_filter_results_with_mock_llm(mocker, mock_llm_response):
     assert processor.llm is not None, "ResultProcessor could not be initialized. Check GOOGLE_API_KEY."
 
     # Mock the 'invoke' method of the llm instance to return our predefined response
-    mocker.patch.object(processor.llm, 'invoke', return_value=mock_llm_response)
+    mock_llm = mocker.MagicMock()
+    mock_llm.invoke.return_value = mock_llm_response
+    processor.llm = mock_llm
 
     # Create some dummy results to be filtered
     dummy_results = [
