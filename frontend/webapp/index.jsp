@@ -18,12 +18,13 @@
             <div>
                 <label for="platforms">🌐 플랫폼</label>
                 <input type="text" id="platforms" name="platforms" required
-                       placeholder="예: google, reddit, asec">
+                       placeholder="검색할 플랫폼을 입력하세요 (쉼표로 구분) 예: example1.com, example2.com, ...">
             </div>
             <div>
                 <label for="detail">✨ 상세 조건 (선택)</label>
                 <textarea id="detail" name="detail" rows="3"
-                          placeholder="예: 랜섬웨어, 보안 이슈, API 문서 등 원하는 상세 조건을 입력하세요"></textarea>
+                          placeholder="AI가 더 정확한 결과를 찾을 수 있도록 원하는 조건을 자유롭게 작성하세요.
+예: CVE 정보 위주, 튜토리얼보다는 실무 사례, 최신 버전만, 한국어 콘텐츠 우선 등"></textarea>
             </div>
             <button type="submit">🚀 검색 시작하기</button>
         </form>
