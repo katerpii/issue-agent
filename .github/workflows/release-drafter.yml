@@ -1,0 +1,24 @@
+# .github/workflows/release-drafter.yml
+# 한국어: 릴리스 노트 초안 자동 생성 워크플로우
+name: Release Drafter
+
+on:
+  push:
+    branches:
+      - develop # develop 브랜치에 push 될 때마다 실행
+
+jobs:
+  update_release_draft:
+    runs-on: ubuntu-latest
+    steps:
+      # 이 action은 develop 브랜치에 들어온 PR들을 기반으로
+      # main 브랜치에 대한 릴리스 초안을 작성/업데이트합니다.
+      - name: Draft a new release
+        uses: release-drafter/release-drafter@v6
+        with:
+          config-name: release-drafter.yml
+          # develop의 변경사항을 기반으로 main에 릴리스 초안을 작성하도록 설정
+          publish: false
+          prerelease: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
