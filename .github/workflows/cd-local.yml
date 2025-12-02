@@ -39,11 +39,11 @@ jobs:
 
       - name: Stop existing containers
         run: |
-          docker-compose down || true
+          docker compose down || true
 
       - name: Build and start services
         run: |
-          docker-compose up -d --build
+          docker compose up -d --build
 
       - name: Wait for services to start
         run: |
@@ -52,7 +52,7 @@ jobs:
 
       - name: Check service status
         run: |
-          docker-compose ps
+          docker compose ps
 
       - name: Health check - Backend
         run: |
@@ -81,11 +81,11 @@ jobs:
         if: failure()
         run: |
           echo "=== Backend Logs ==="
-          docker-compose logs backend
+          docker compose logs backend
           echo "=== Frontend Logs ==="
-          docker-compose logs frontend
+          docker compose logs frontend
           echo "=== Redis Logs ==="
-          docker-compose logs redis
+          docker compose logs redis
 
       - name: Deployment summary
         if: success()
@@ -96,4 +96,4 @@ jobs:
           echo "- Frontend: http://localhost:8080"
           echo "- Backend:  http://localhost:5000"
           echo ""
-          echo "Logs: docker-compose logs -f"
+          echo "Logs: docker compose logs -f"
