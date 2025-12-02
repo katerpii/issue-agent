@@ -9,7 +9,6 @@ import time
 import redis
 import json
 from pathlib import Path
-from datetime import datetime, timedelta
 import schedule
 
 # Load environment variables
@@ -100,7 +99,6 @@ def check_subscription(subscription):
                 logger.error(f"[CHECKER] Failed to send email to {subscription['email']}")
 
         # Update last_checked timestamp
-        import hashlib
         email = subscription['email']
         sub_id = subscription['subscription_id']
         key = f"subscription:{email}:{sub_id}"

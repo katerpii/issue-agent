@@ -19,7 +19,6 @@ except ImportError:
 
 from models.user_form import UserForm, UserFormAPI
 from controller import ControllerAgent
-from config.settings import Settings
 from utils.logger import setup_logger, log_results
 import hashlib
 import json as json_lib

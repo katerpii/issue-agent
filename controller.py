@@ -128,7 +128,7 @@ class ControllerAgent:
             }
 
         print("\n" + "=" * 50)
-        print(f"[CONTROLLER] Processing complete")
+        print("[CONTROLLER] Processing complete")
         print(f"  Filtered results: {processed_results.get('total_results', 0)}")
         print("=" * 50)
 

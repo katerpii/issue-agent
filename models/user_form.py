@@ -1,7 +1,7 @@
 """
 User form model for collecting user preferences
 """
-from typing import List, Optional
+from typing import List
 from pydantic import BaseModel, field_validator
 from dataclasses import dataclass
 
