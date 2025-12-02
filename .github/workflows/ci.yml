@@ -55,7 +55,9 @@ jobs:
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
           # 이메일 테스트를 위한 수신자 이메일 (실제 발송은 모킹되므로 어떤 값이든 가능)
           RECIPIENT_EMAIL_FOR_TEST: "test@example.com"
-        run: pytest tests/integration/
+        run: |
+          export PYTHONPATH=$PYTHONPATH:.
+          pytest tests/integration/
 
   security-scan:
     name: Security Scan
