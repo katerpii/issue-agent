@@ -1,0 +1,52 @@
+# .github/workflows/build-and-push.yml
+# 한국어: Docker 이미지 빌드 및 푸시 파이프라인
+name: Build and Push Docker Image
+
+on:
+  push:
+    branches:
+      - develop
+    tags:
+      - 'v*.*.*' # v1.0.0, v1.2.3.4 같은 태그 형식
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          # develop 브랜치에 푸시된 경우 'dev' 태그를 생성합니다.
+          tags: |
+            type=raw,value=dev,enable=${{ github.ref_name == 'develop' }}
+            # Git 태그가 푸시된 경우 해당 태그를 이미지 태그로 사용하고, latest로도 지정합니다.
+            type=ref,event=tag
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile.backend
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
