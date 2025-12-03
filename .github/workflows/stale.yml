@@ -1,5 +1,4 @@
 # .github/workflows/stale.yml
-# 한국어: 오래된 이슈 및 PR 관리 워크플로우
 # 매일 0시에 실행되어 오래된 이슈와 PR을 찾아 처리합니다.
 name: Mark Stale Issues and PRs
 

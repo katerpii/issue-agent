@@ -1,5 +1,4 @@
 # .github/release-drafter.yml
-# 한국어: Release Drafter 설정 파일
 # 릴리스 노트의 템플릿과 카테고리를 정의합니다.
 # develop 브랜치의 변경사항이 main 브랜치에 대한 릴리스 노트 초안에 반영됩니다.
 

@@ -1,5 +1,4 @@
 # .github/workflows/ci.yml
-# 한국어: 통합 CI 파이프라인 (Lint, Integration Tests, Security Scan)
 name: Continuous Integration
 
 on:

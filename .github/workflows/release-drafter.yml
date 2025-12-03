@@ -1,5 +1,4 @@
 # .github/workflows/release-drafter.yml
-# 한국어: 릴리스 노트 초안 자동 생성 워크플로우
 name: Release Drafter
 
 on:
