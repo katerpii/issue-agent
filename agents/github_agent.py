@@ -43,9 +43,9 @@ class GithubAgent(BaseAgent):
     def crawl(
         self,
         keywords: List[str],
-        start_date: datetime,
-        end_date: datetime,
         detail: str = "",
+        start_date: datetime = None,
+        end_date: datetime = None,
         max_pages: int = 3
     ) -> List[Dict[str, Any]]:
         """
@@ -53,7 +53,8 @@ class GithubAgent(BaseAgent):
         """
         print(f"\n[{self.platform_name.upper()}] Starting crawl...")
         print(f"  Keywords: {', '.join(keywords)}")
-        print(f"  Period: {start_date.date()} ~ {end_date.date()}")
+        if start_date and end_date:
+            print(f"  Period: {start_date.date()} ~ {end_date.date()}")
         print(f"  Max pages: {max_pages}")
 
         if not self.browser_use_available:
@@ -90,8 +91,8 @@ class GithubAgent(BaseAgent):
     async def _crawl_async(
         self,
         query: str,
-        start_date: datetime,
-        end_date: datetime,
+        start_date: datetime = None,
+        end_date: datetime = None,
         max_pages: int = 3
     ) -> List[Dict[str, Any]]:
         """
@@ -136,13 +137,19 @@ class GithubAgent(BaseAgent):
     def _build_search_url(
         self,
         query: str,
-        start_date: datetime,
-        end_date: datetime
+        start_date: datetime = None,
+        end_date: datetime = None
     ) -> str:
         encoded_query = quote_plus(query)
         search_url = "https://github.com/search?q={query}&type=repositories"
         if '{query}' in search_url:
             search_url = search_url.replace('{query}', encoded_query)
+
+        # Add date range if provided
+        if start_date and end_date:
+            date_filter = f"created:{start_date.strftime('%Y-%m-%d')}..{end_date.strftime('%Y-%m-%d')}"
+            search_url += f"&q={quote_plus(date_filter)}"
+
         return search_url
 
     async def _parse_page_async(self, page: Page, query: str) -> List[Dict[str, Any]]:

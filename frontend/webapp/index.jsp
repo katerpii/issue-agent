@@ -85,9 +85,19 @@
         // Backend API URL
         const runApiUrl = 'http://localhost:5000/api/run';
 
+        // 중복 요청 방지
+        let isRunning = false;
+
         form.addEventListener('submit', async function(event) {
             event.preventDefault();
 
+            // 이미 실행 중이면 무시
+            if (isRunning) {
+                console.log('Already running, ignoring duplicate request');
+                return;
+            }
+
+            isRunning = true;
             spinner.style.display = 'block';
             resultsEl.textContent = 'Running agent...';
             runAgentButton.disabled = true;
@@ -105,7 +115,10 @@
                 console.log('Request data:', JSON.stringify(data, null, 2));
 
                 const controller = new AbortController();
-                const timeoutId = setTimeout(function() { controller.abort(); }, 60000);
+                const timeoutId = setTimeout(function() {
+                    console.log('Request timeout after 10 minutes');
+                    controller.abort();
+                }, 600000);
 
                 const response = await fetch(runApiUrl, {
                     method: 'POST',
