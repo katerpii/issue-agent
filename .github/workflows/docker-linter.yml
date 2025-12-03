@@ -1,5 +1,4 @@
 # .github/workflows/docker-linter.yml
-# 한국어: Dockerfile 린터 워크플로우 (Hadolint)
 # Dockerfile.backend 파일의 품질과 보안 취약점을 검사합니다.
 name: Dockerfile Linter
 

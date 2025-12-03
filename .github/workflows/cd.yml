@@ -1,5 +1,4 @@
 # .github/workflows/cd.yml
-# 한국어: 지속적 배포 파이프라인
 name: Continuous Deployment
 
 on:
