@@ -1,0 +1,29 @@
+# .github/release-drafter.yml
+# 릴리스 노트의 템플릿과 카테고리를 정의합니다.
+# develop 브랜치의 변경사항이 main 브랜치에 대한 릴리스 노트 초안에 반영됩니다.
+
+# PR 라벨에 따라 변경사항을 분류합니다.
+categories:
+  - title: '🚀 새로운 기능 (Features)'
+    labels:
+      - 'feature'
+      - 'enhancement'
+  - title: '🐛 버그 수정 (Bug Fixes)'
+    labels:
+      - 'fix'
+      - 'bug'
+  - title: '📖 문서 (Documentation)'
+    labels:
+      - 'documentation'
+  - title: '🧰 유지보수 (Maintenance)'
+    labels:
+      - 'chore'
+      - 'maintenance'
+
+# 릴리스 노트 템플릿
+template: |
+  ## 변경된 점 (What's Changed)
+
+  $CHANGES
+
+  **전체 변경 로그**: https://github.com/$OWNER/$REPOSITORY/compare/$PREVIOUS_TAG...$NEXT_TAG

@@ -41,6 +41,8 @@ Thumbs.db
 
 # Environment variables
 .env
+.env.prod
+.env.staging
 
 # Results and data
 results/
@@ -49,6 +51,10 @@ output/
 # Exclude etc directory
 etc/
 
-# Exclude all markdown files except README.md
+# Exclude all markdown files except important ones
 *.md
 !README.md
+!DEPLOYMENT.md
+!CICD_SETUP.md
+!LOCAL_RUNNER_SETUP.md
+!LICENSE.md
